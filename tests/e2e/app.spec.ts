@@ -232,7 +232,7 @@ test("backup restores complete financial data and PDF downloads locally", async 
   });
   await expect(page.getByText("Backup restored.")).toBeVisible();
   await page
-    .getByRole("button", { name: "History", exact: true })
+    .getByRole("button", { name: "Activity", exact: true })
     .last()
     .click();
   await page

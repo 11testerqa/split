@@ -1,0 +1,47 @@
+{
+  "dataset": "Synthetic Malaysian-style receipt validation (not real-world accuracy)",
+  "generatedAt": "2026-10-08T09:06:12.719Z",
+  "engine": "Tesseract.js local English LSTM",
+  "results": [
+    {
+      "id": "synthetic-clear",
+      "kind": "synthetic",
+      "variant": "original",
+      "permission": "Created in this repository; contains no real personal or merchant data.",
+      "itemRecall": 1,
+      "itemPrecision": 1,
+      "priceAccuracy": 1,
+      "quantityAccuracy": 1,
+      "totalCorrect": true,
+      "reconciled": true,
+      "processingMs": 290,
+      "correctionTimeMs": null,
+      "failed": false,
+      "estimatedAPICostUSD": 0,
+      "recognizedText": "KOPI HOUSE\n\n08/10/2026\n\n2 x Chicken Rice    18.00    36.00\nNoodles                    22.00\nSubtotal                   58.00\nService Charge               5.80\nSST                         3.48\nGrand Total RM              67.28\nCash                      100.00\nChange                     32.72\n"
+    },
+    {
+      "id": "synthetic-clear",
+      "kind": "synthetic",
+      "variant": "contrast",
+      "permission": "Created in this repository; contains no real personal or merchant data.",
+      "itemRecall": 1,
+      "itemPrecision": 1,
+      "priceAccuracy": 1,
+      "quantityAccuracy": 1,
+      "totalCorrect": true,
+      "reconciled": true,
+      "processingMs": 246,
+      "correctionTimeMs": null,
+      "failed": false,
+      "estimatedAPICostUSD": 0,
+      "recognizedText": "KOPI HOUSE\n\n08/10/2026\n\n2 x Chicken Rice    18.00    36.00\nNoodles                    22.00\nSubtotal                   58.00\nService Charge               5.80\nSST                         3.48\nGrand Total RM              67.28\nCash                      100.00\nChange                     32.72\n"
+    }
+  ],
+  "limitations": [
+    "Synthetic results do not measure real receipt performance.",
+    "Correction time requires observed human review and was not measured.",
+    "No cloud adapter or paid API was configured.",
+    "Processing time includes recognition and parsing, excludes worker startup."
+  ]
+}

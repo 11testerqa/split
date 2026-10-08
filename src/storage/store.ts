@@ -95,6 +95,7 @@ const session = z.object({
   updatedAt: z.string(),
 });
 const draft = z.object({
+  expenseId: z.string().optional(),
   sessionId: z.string(),
   title: z.string(),
   amount: z.string(),

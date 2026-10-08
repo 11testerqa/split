@@ -3,3 +3,10 @@ dist/
 test-results/
 playwright-report/
 *.tsbuildinfo
+public/ocr/
+.env
+.env.*
+!.env.example
+work/
+
+test-results-live/

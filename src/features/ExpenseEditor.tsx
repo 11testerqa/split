@@ -1,3 +1,4 @@
+import ReceiptScanner from "../ocr/ReceiptScanner";
 import { useMemo, useState } from "react";
 import { Plus, Trash2, ArrowLeft, Check, ReceiptText } from "lucide-react";
 import {
@@ -20,6 +21,7 @@ import { Avatar, CurrencySelect, Field } from "../components/ui";
 export function newDraft(s: Session, e?: Expense): Draft {
   return {
     sessionId: s.id,
+    expenseId: e?.id || id(),
     title: e?.title || "",
     amount: e?.inputAmount ?? (e ? inputMoney(e.amount, e.currency) : ""),
     currency: e?.currency || s.currency,
@@ -97,14 +99,17 @@ export default function ExpenseEditor({
   onChange,
   onSave,
   onBack,
+  scanInitially = false,
 }: {
   session: Session;
   draft: Draft;
   onChange: (d: Draft) => void;
   onSave: (e: Expense) => void;
   onBack: () => void;
+  scanInitially?: boolean;
 }) {
   const [error, setError] = useState("");
+  const [scanning, setScanning] = useState(scanInitially);
   const update = (patch: Partial<Draft>) => onChange({ ...d, ...patch });
   const calc = useMemo(() => {
     try {
@@ -150,7 +155,7 @@ export default function ExpenseEditor({
         inputAmount: d.amount,
         split: d.split,
         participantIds: d.selected,
-        id: d.editing || id(),
+        id: d.editing || d.expenseId || id(),
         title: d.title.trim(),
         amount: r.total,
         currency: d.currency,
@@ -188,6 +193,37 @@ export default function ExpenseEditor({
   }
   return (
     <section>
+      <button className="secondary" onClick={() => setScanning(true)}>
+        Scan a receipt
+      </button>
+      {scanning && (
+        <ReceiptScanner
+          draftKey={`expense:${d.sessionId}:${d.editing || "new"}`}
+          currency={d.currency}
+          onClose={() => setScanning(false)}
+          onConfirm={(r) => {
+            update({
+              title: r.merchant || d.title,
+              date: r.date || d.date,
+              currency: r.currency,
+              items: r.items.map(({ originalText, ...i }) => ({
+                ...i,
+                notes: originalText,
+              })),
+              charges: r.charges,
+              amount: inputMoney(
+                r.items.reduce(
+                  (sum, i) => sum + money(i.price, r.currency) * i.quantity,
+                  0,
+                ),
+                r.currency,
+              ),
+              receipt: r.printedTotal,
+            });
+            setScanning(false);
+          }}
+        />
+      )}
       <button className="text-button" onClick={onBack}>
         <ArrowLeft size={18} /> Back to {s.name}
       </button>

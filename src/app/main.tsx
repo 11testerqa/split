@@ -13,6 +13,8 @@ import {
   Sun,
   Moon,
   Sparkles,
+  Plane,
+  ScanLine,
 } from "lucide-react";
 import type { Data, Session, Mode, Expense } from "../domain/model";
 import { modes } from "../domain/presentation";
@@ -33,7 +35,16 @@ import SettingsView from "../features/SettingsView";
 import ExpenseEditor, { newDraft } from "../features/ExpenseEditor";
 import { download, pdf, summary, printSummary } from "../utilities/share";
 import "../styles/app.css";
+import LiveLobby from "../collaboration/LiveLobby";
+import LiveRoom from "../collaboration/LiveRoom";
+import SharedHome from "../collaboration/SharedHome";
+import { inviteToken } from "../collaboration/client";
 function App() {
+  const initialInvite = inviteToken(location.hash);
+  const [live, setLive] = useState<
+    "lobby" | { room: string; token?: string } | null
+  >(initialInvite ? "lobby" : null);
+  const [scanFirst, setScanFirst] = useState(false);
   const [data, setData] = useState<Data>(empty);
   const [loaded, setLoaded] = useState(false);
   const [storageError, setStorageError] = useState(false);
@@ -158,6 +169,7 @@ function App() {
   }
   function nav(p: string) {
     setPage(p);
+    setLive(null);
     setActive(null);
     setCreating(null);
     setEditing(false);
@@ -175,8 +187,8 @@ function App() {
             <span className="brand-dot">.</span>
           </button>
           <nav className="desktop-nav" aria-label="Main navigation">
-            {[Home, History, Users, Settings].map((Icon, i) => {
-              const p = ["Home", "History", "Groups", "Settings"][i];
+            {[Home, History, Users, Plane, Settings].map((Icon, i) => {
+              const p = ["Home", "Activity", "Groups", "Trips", "Settings"][i];
               return (
                 <button
                   key={p}
@@ -191,7 +203,7 @@ function App() {
           </nav>
           <div className="header-end">
             <span className="local-badge">
-              <span /> Local & private
+              <span /> {live ? "Private collaboration" : "Local & private"}
             </span>
             <button
               className="icon-button"
@@ -303,6 +315,18 @@ function App() {
           )}
           {!loaded ? (
             <div className="empty-state">Opening your local space…</div>
+          ) : live === "lobby" ? (
+            <LiveLobby
+              initialInvite={initialInvite}
+              onBack={() => setLive(null)}
+              onOpen={(room, token) => setLive({ room, token })}
+            />
+          ) : live ? (
+            <LiveRoom
+              roomId={live.room}
+              initialToken={live.token}
+              onBack={() => setLive("lobby")}
+            />
           ) : creating ? (
             <CreateSession
               mode={creating}
@@ -322,6 +346,7 @@ function App() {
             editing && data.draft?.sessionId === s.id ? (
               <ExpenseEditor
                 session={s}
+                scanInitially={scanFirst}
                 draft={data.draft}
                 onChange={(draft) => setData((d) => ({ ...d, draft }))}
                 onBack={() => setEditing(false)}
@@ -394,7 +419,19 @@ function App() {
                   </p>
                   <button
                     className="primary"
-                    onClick={() => setCreating("equal")}
+                    onClick={() => {
+                      setScanFirst(true);
+                      setCreating("own");
+                    }}
+                  >
+                    Scan a receipt <ScanLine size={19} />
+                  </button>
+                  <button
+                    className="secondary"
+                    onClick={() => {
+                      setScanFirst(false);
+                      setCreating("equal");
+                    }}
                   >
                     Split a bill <ArrowUpRight size={19} />
                   </button>
@@ -408,6 +445,27 @@ function App() {
                   Good times look better together ↗
                 </span>
               </section>
+              <div className="card room-callout row">
+                <div>
+                  <p className="eyebrow">MORE HANDS. LESS MATH.</p>
+                  <h2>Everyone claims their own.</h2>
+                  <p>
+                    Scan, invite your friends, and settle together in a live
+                    bill room.
+                  </p>
+                </div>
+                <div className="chips">
+                  <button className="primary" onClick={() => setLive("lobby")}>
+                    Create a bill room
+                  </button>
+                  <button
+                    className="secondary"
+                    onClick={() => setLive("lobby")}
+                  >
+                    Join a bill room
+                  </button>
+                </div>
+              </div>
               <div className="section-heading">
                 <div>
                   <p className="eyebrow">FOUR WAYS TO KEEP IT FAIR</p>
@@ -425,7 +483,10 @@ function App() {
                     key={m.id}
                     whileHover={{ y: -5 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setCreating(m.id)}
+                    onClick={() => {
+                      setScanFirst(false);
+                      setCreating(m.id);
+                    }}
                   >
                     <div className="row">
                       <span className="mode-art" aria-hidden="true">
@@ -459,13 +520,14 @@ function App() {
                   </button>
                 </div>
               )}
+              <SharedHome onOpen={(room) => setLive({ room })} />
               <div className="home-bottom">
                 <section>
                   <div className="section-heading">
                     <h2>Recent activity</h2>
                     <button
                       className="text-button"
-                      onClick={() => nav("History")}
+                      onClick={() => nav("Activity")}
                     >
                       View all <ArrowRight size={16} />
                     </button>
@@ -533,7 +595,10 @@ function App() {
               </div>
               <div className="privacy-footer">
                 <span>♧ Your money stories stay yours.</span>
-                <span>Saved on this device. No account needed.</span>
+                <span>
+                  Local splits stay on this device. Live rooms use secure guest
+                  sessions.
+                </span>
               </div>
             </>
           ) : page === "Settings" ? (
@@ -585,22 +650,56 @@ function App() {
                       : "EVERY MEMORY, EVERY SPLIT"}
                   </p>
                   <h1>
-                    {page === "Groups" ? "Your circles." : "Your history."}
+                    {page === "Groups"
+                      ? "Your circles."
+                      : page === "Trips"
+                        ? "Your adventures."
+                        : "Your activity."}
                   </h1>
                 </div>
                 <button
                   className="primary"
                   onClick={() =>
-                    setCreating(page === "Groups" ? "group" : "equal")
+                    setCreating(
+                      page === "Groups"
+                        ? "group"
+                        : page === "Trips"
+                          ? "travel"
+                          : "equal",
+                    )
                   }
                 >
-                  <Plus size={18} /> New {page === "Groups" ? "group" : "split"}
+                  <Plus size={18} /> New{" "}
+                  {page === "Groups"
+                    ? "group"
+                    : page === "Trips"
+                      ? "trip"
+                      : "split"}
                 </button>
               </div>
+              {(page === "Groups" ||
+                page === "Trips" ||
+                page === "Activity") && (
+                <LiveLobby
+                  filter={
+                    page === "Groups"
+                      ? "group"
+                      : page === "Trips"
+                        ? "travel"
+                        : undefined
+                  }
+                  onBack={() => nav("Home")}
+                  onOpen={(room, token) => setLive({ room, token })}
+                />
+              )}
+              <h2>Saved on this device</h2>
               <SessionList
-                sessions={data.sessions.filter(
-                  (s) =>
-                    page !== "Groups" || ["group", "travel"].includes(s.mode),
+                sessions={data.sessions.filter((s) =>
+                  page === "Groups"
+                    ? s.mode === "group"
+                    : page === "Trips"
+                      ? s.mode === "travel"
+                      : true,
                 )}
                 onOpen={openSession}
               />
@@ -615,8 +714,8 @@ function App() {
           )}
         </main>
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          {[Home, History, Users, Settings].map((Icon, i) => {
-            const p = ["Home", "History", "Groups", "Settings"][i];
+          {[Home, History, Users, Plane, Settings].map((Icon, i) => {
+            const p = ["Home", "Activity", "Groups", "Trips", "Settings"][i];
             return (
               <button
                 key={p}

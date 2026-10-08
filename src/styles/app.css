@@ -1434,3 +1434,133 @@ summary {
     display: none;
   }
 }
+/* Scan-first and collaborative surfaces reuse the existing theme tokens. */
+.room-callout {
+  margin: 28px 0;
+  background: linear-gradient(120deg, var(--soft), var(--surface));
+}
+.room-callout p:last-child {
+  margin-bottom: 0;
+}
+.scanner {
+  margin: 24px 0;
+}
+.receipt-preview {
+  position: relative;
+  max-width: 420px;
+  margin: 24px auto;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #efefef;
+}
+.receipt-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.receipt-region {
+  position: absolute;
+  background: #9a72ec40;
+  border: 3px solid var(--violet);
+  pointer-events: none;
+}
+.ocr-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.scan-progress {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+}
+.scan-progress progress {
+  width: 100%;
+  accent-color: var(--violet);
+}
+.invite-qr {
+  width: 220px;
+  max-width: 100%;
+  display: block;
+  margin: 20px auto;
+  border-radius: 10px;
+}
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+.claim-card {
+  box-shadow:
+    0 6px 0 var(--soft),
+    0 12px 30px #29273908;
+}
+.presence {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #888;
+  display: inline-block;
+}
+.presence.present {
+  background: #168663;
+}
+blockquote {
+  border-left: 3px solid var(--violet);
+  margin: 14px 0;
+  padding: 8px 16px;
+  color: var(--muted);
+}
+details.card {
+  margin: 20px 0;
+}
+.scanner small,
+.scanner blockquote {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .room-callout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mobile-nav {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .mobile-nav button {
+    font-size: 11px;
+  }
+  .scanner {
+    padding: 16px;
+  }
+  .claim-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .claim-card {
+    transition: none;
+  }
+}
+.review-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.source-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  margin: auto auto 0;
+  border: 1px solid var(--line);
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  width: min(640px, 100%);
+  max-height: 80dvh;
+  overflow: auto;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 -16px 70px #29273930;
+}
+.source-sheet::backdrop {
+  background: #29273980;
+}

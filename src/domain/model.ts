@@ -98,6 +98,7 @@ export interface Session {
 export type Group = Session & { mode: "group" };
 export type Trip = Session & { mode: "travel" };
 export interface Draft {
+  expenseId?: string;
   sessionId: string;
   title: string;
   amount: string;
